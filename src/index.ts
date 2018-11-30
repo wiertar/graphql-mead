@@ -220,6 +220,12 @@ const resolvers = {
         deletePost(parent, args, ctx, info) {
             let selectedPost = {};
 
+            const postExists = posts.some(post => post.id === args.id);
+
+            if (!postExists) {
+                throw new Error("Post does not exist!");
+            }
+
             const filteredPosts = posts.filter((post, index) => {
                 const postToDelete = post.id !== args.id;
                 if (postToDelete) {
