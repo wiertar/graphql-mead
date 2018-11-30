@@ -2,6 +2,7 @@ import { GraphQLServer } from 'graphql-yoga';
 import fs from 'fs';
 import path from 'path';
 import faker from 'faker';
+import { printSchema } from 'graphql';
 
 let users = [{
     id: '1',
@@ -81,7 +82,31 @@ const typeDefs: string = `
     }
 
     type Mutation {
-        createUser(firstName: String!, lastName: String!, email: String!, age: Int): User!
+        createUser(data: CreateUserInput): User!
+        deleteUser(id: ID!): User!
+        createPost(data: CreatePostInput): Post!
+        deletePost(id: ID!): Post!
+        createComment(data: CreateComment): Comment!
+    }
+
+    input CreateUserInput {
+        first_name: String!
+        last_name: String!
+        email: String!
+        age: Int
+    }
+
+    input CreatePostInput {
+        title: String!
+        body: String!
+        published: Boolean!
+        author: ID!
+    }
+
+    input CreateComment {
+        text: String!
+        author: ID!
+        post: ID!
     }
 
     type User {
@@ -139,19 +164,104 @@ const resolvers = {
     },
     Mutation: {
         createUser(parent, args, ctx, info) {
-            const isEmailTaken = users.some(user => user.email === args.email);
+            const isEmailTaken = users.some(user => user.email === args.data.email);
 
             if (isEmailTaken) throw new Error("Email is taken...");
-            
+
             const newUser = {
                 id: (users.length + 1).toString(),
-                first_name: args.firstName,
-                last_name: args.lastName,
-                email: args.email,
-                age: args.age
+                ...args.data
             }
+
             users.push(newUser);
+            
             return newUser;
+        },
+        deleteUser(parent, args, ctx, info) {
+            const userIndex = users.findIndex(user => user.id === args.id);
+            
+            if (userIndex === -1) {
+                throw new Error("User not found.");
+            }
+
+            const deletedUser = users[userIndex];
+
+            users.splice(userIndex, 1);
+
+            posts = posts.filter(post => {
+                const match = post.author === args.id;
+                
+                if (match) {
+                    comments = comments.filter(comment => comment.post !== post.id);
+                }
+                comments = comments.filter(comment => comment.author !== args.id)
+
+                return !match;
+            });
+
+            return deletedUser;
+        },
+        createPost(parent, args, ctx, info) {
+            const userExists = users.some(user => user.id === args.data.author);
+            
+            if (!userExists) {
+                throw new Error("User not found");
+            }
+
+            const post = {
+                id: (Date.now() + Math.random()).toString(),
+                ...args.data
+            };
+
+            posts.push(post);
+
+            return post;
+        },
+        deletePost(parent, args, ctx, info) {
+            let selectedPost = {};
+
+            const filteredPosts = posts.filter((post, index) => {
+                const postToDelete = post.id !== args.id;
+                if (postToDelete) {
+                    return post;
+                } 
+                else {
+                    selectedPost = posts[index];
+                }
+            });
+
+            if (filteredPosts) {
+                posts = filteredPosts;
+            }
+
+            const filteredComments = comments.filter(comment => comment.post !== args.id);
+
+            if (filteredComments) {
+                comments = filteredComments;
+            }
+
+            return selectedPost;
+        },
+        createComment(parent, args, ctx, info) {
+            const postExists = posts.some(post => post.id === args.data.post && post.published);
+            const userExists = users.some(user => user.id === args.data.author);
+
+            if (!postExists) {
+                throw new Error("The post doesn't exists.");
+            }
+
+            if (!userExists) {
+                throw new Error("User not found");
+            }
+
+            const newComment = {
+                id: (Date.now() + Math.random()).toString(),
+                ...args.data
+            };
+
+            comments.push(newComment);
+
+            return newComment;
         }
     },
     Post: {
@@ -198,9 +308,3 @@ const server = new GraphQLServer({
 });
 
 server.start(() => console.log('The server is up!'));
-
-// ecommerce
-// restaurant
-// digital agency
-// html email
-// rest api
