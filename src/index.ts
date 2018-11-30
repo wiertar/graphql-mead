@@ -6,19 +6,19 @@ import { printSchema } from 'graphql';
 
 let users = [{
     id: '1',
-    first_name: 'poop',
-    email: 't@poop.com'
+    first_name: 'tom',
+    email: 't@google.com'
 }, {
     id: '2',
-    first_name: 'goot',
+    first_name: 'bob',
     last_name: 'bob',
-    email: 'goot@gmail.com',
-    age: '43'
+    email: 'bob@bob.com',
+    age: '23'
 }, {
     id: '3',
-    first_name: 'kool',
-    email: 'wer@gmail.com',
-    age: '12'
+    first_name: 'A Name',
+    email: 'Someone@gmail.com',
+    age: '44'
 }];
 
 let posts = [
@@ -87,6 +87,7 @@ const typeDefs: string = `
         createPost(data: CreatePostInput): Post!
         deletePost(id: ID!): Post!
         createComment(data: CreateComment): Comment!
+        deleteComment(id: ID!): Comment!
     }
 
     input CreateUserInput {
@@ -268,6 +269,17 @@ const resolvers = {
             comments.push(newComment);
 
             return newComment;
+        },
+        deleteComment(parent, args, ctx, info) {
+            const commentIndex = comments.findIndex(comment => comment.id === args.id);
+
+            if (commentIndex === -1) {
+                throw new Error("Comment not found.");
+            }
+
+            const deletedComment = comments.splice(commentIndex, 1);
+
+            return deletedComment[0];
         }
     },
     Post: {
