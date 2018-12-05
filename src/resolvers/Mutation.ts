@@ -13,6 +13,37 @@ export default {
         
         return newUser;
     },
+    updateUser(parent, args, { db }, info) {
+        const user = db.users.find(user => user.id == args.id);
+
+        if (!user) {
+            throw new Error("User not found.");
+        }
+
+        if (typeof args.data.email === 'string') {
+            const emailTaken = db.users.some(user => user.email === args.data.email);
+
+            if (emailTaken) {
+                throw new Error("Email in use.");
+            }
+
+            user.email = args.data.email;
+        }
+
+        if (typeof args.data.first_name === 'string') {
+            user.first_name = args.data.first_name;
+        }
+
+        if (typeof args.data.last_name === 'string') {
+            user.last_name = args.data.last_name;
+        }
+
+        if (typeof args.data.age !== 'undefined') {
+            user.age = args.data.age;
+        }
+
+        return user;
+    },
     deleteUser(parent, args, { db }, info) {
         const userIndex = db.users.findIndex(user => user.id === args.id);
         
