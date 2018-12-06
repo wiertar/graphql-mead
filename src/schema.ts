@@ -10,8 +10,10 @@ export const typeDefs = `
         updateUser(id: ID!, data: UpdateUserInput!): User!
         deleteUser(id: ID!): User!
         createPost(data: CreatePostInput): Post!
+        updatePost(id: ID!, data: UpdatePostInput!): Post!
         deletePost(id: ID!): Post!
-        createComment(data: CreateComment): Comment!
+        createComment(data: CreateCommentInput): Comment!
+        updateComment(id: ID!, data: UpdateCommentInput!): Comment!
         deleteComment(id: ID!): Comment!
     }
 
@@ -36,10 +38,20 @@ export const typeDefs = `
         author: ID!
     }
 
-    input CreateComment {
+    input UpdatePostInput {
+        title: String
+        body: String
+        published: Boolean
+    }
+
+    input CreateCommentInput {
         text: String!
         author: ID!
         post: ID!
+    }
+
+    input UpdateCommentInput {
+        text: String
     }
 
     type User {
