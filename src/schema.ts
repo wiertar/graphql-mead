@@ -17,6 +17,11 @@ export const typeDefs = `
         deleteComment(id: ID!): Comment!
     }
 
+    type Subscription {
+        comment(postId: ID!): Comment!
+        post: PostSubscriptionPayload!
+    }
+
     input CreateUserInput {
         first_name: String!
         last_name: String!
@@ -78,5 +83,10 @@ export const typeDefs = `
         text: String!
         author: User!
         post: Post!
+    }
+
+    type PostSubscriptionPayload {
+        mutation: String!
+        data: Post!
     }
 `;
