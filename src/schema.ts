@@ -18,7 +18,7 @@ export const typeDefs = `
     }
 
     type Subscription {
-        comment(postId: ID!): Comment!
+        comment(postId: ID!): CommentSubscriptionPayload!
         post: PostSubscriptionPayload!
     }
 
@@ -85,8 +85,19 @@ export const typeDefs = `
         post: Post!
     }
 
+    enum MutationType {
+        CREATED
+        UPDATED
+        DELETED
+    }
+
     type PostSubscriptionPayload {
-        mutation: String!
+        mutation: MutationType!
         data: Post!
+    }
+
+    type CommentSubscriptionPayload {
+        mutation: MutationType!
+        data: Comment!
     }
 `;
